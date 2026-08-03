@@ -1,0 +1,41 @@
+spring:
+  application:
+    name: RetbotBackend
+
+  profiles:
+    active: dev
+
+  jackson:
+    default-property-inclusion: non_null
+    deserialization:
+      fail-on-unknown-properties: false
+
+  flyway:
+    enabled: false   # migrations ainda não criadas — ligar quando existirem
+
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: none   # trocar para "validate" quando as migrations Flyway existirem
+    properties:
+      hibernate:
+        format_sql: true
+
+  web:
+    error:
+      include-message: always
+      include-stacktrace: never
+
+server:
+  port: 8080
+
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+
+app:
+  jwt:
+    expiration-ms: 900000          # 15 minutos — access token
+    refresh-expiration-ms: 604800000  # 7 dias — refresh token
