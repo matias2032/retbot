@@ -1,4 +1,7 @@
 spring:
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.security.autoconfigure.servlet.UserDetailsServiceAutoConfiguration
   datasource:
     url: jdbc:postgresql://localhost:5433/retbot_bd
     username: postgres
@@ -6,6 +9,8 @@ spring:
 
   jpa:
     show-sql: true
+    hibernate:
+      ddl-auto: update
 
 logging:
   level:
