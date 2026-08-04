@@ -1,6 +1,6 @@
 package dev258.retbotbackend.security;
 
-import dev258.retbotbackend.security.dto.LoginResponse;
+import dev258.retbotbackend.security.dto.TokensEmitidos;
 import dev258.retbotbackend.utilizador.entity.Utilizador;
 import dev258.retbotbackend.utilizador.repository.UtilizadorRepository;
 import lombok.RequiredArgsConstructor;
@@ -19,7 +19,7 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
 
-    public LoginResponse login(String email, String senha) {
+    public TokensEmitidos login(String email, String senha) {
         Utilizador utilizador = utilizadorRepository.findByEmail(email)
                 .orElseThrow(() -> new CredenciaisInvalidasException("Email ou senha inválidos"));
 
@@ -34,7 +34,13 @@ public class AuthService {
         return emitirTokens(utilizador);
     }
 
-    public LoginResponse refresh(String refreshToken) {
+    /**
+     * Rotação de refresh token: cada refresh bem-sucedido invalida
+     * implicitamente o anterior ao emitir um novo — o token antigo
+     * continua criptograficamente válido até expirar (não há blacklist),
+     * mas o cookie no browser é sempre substituído pelo novo.
+     */
+    public TokensEmitidos refresh(String refreshToken) {
         Map<String, Object> payload = jwtService.validarToken(refreshToken);
 
         if (!"refresh".equals(payload.get("type"))) {
@@ -49,10 +55,10 @@ public class AuthService {
         return emitirTokens(utilizador);
     }
 
-    private LoginResponse emitirTokens(Utilizador utilizador) {
+    private TokensEmitidos emitirTokens(Utilizador utilizador) {
         String accessToken = jwtService.gerarAccessToken(utilizador.getIdUtilizador(), utilizador.getEmail());
         String refreshToken = jwtService.gerarRefreshToken(utilizador.getIdUtilizador());
 
-        return new LoginResponse(accessToken, refreshToken, "Bearer", jwtService.getExpiracaoAccessTokenSegundos());
+        return new TokensEmitidos(accessToken, refreshToken, "Bearer", jwtService.getExpiracaoAccessTokenSegundos());
     }
 }

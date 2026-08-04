@@ -153,5 +153,8 @@ public class JwtService {
     return expiracaoAccessTokenMs / 1000;
 }
 
+public long getExpiracaoRefreshTokenSegundos() {
+    return expiracaoRefreshTokenMs / 1000;
+}
 
 }

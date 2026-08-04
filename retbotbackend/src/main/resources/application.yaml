@@ -39,3 +39,5 @@ app:
   jwt:
     expiration-ms: 900000          # 15 minutos — access token
     refresh-expiration-ms: 604800000  # 7 dias — refresh token
+  security:
+    cookie-secure: false  
