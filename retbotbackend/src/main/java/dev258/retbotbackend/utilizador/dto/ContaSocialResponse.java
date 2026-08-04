@@ -14,7 +14,8 @@ public record ContaSocialResponse(
         String nomeExibicao,
         EstadoConta estado,
         OffsetDateTime ultimoSync,
-        OffsetDateTime criadoEm
+        OffsetDateTime criadoEm,
+        String urlInstancia // obrigatório apenas para Mastodon; null para as restantes plataformas
 ) {
     public static ContaSocialResponse from(ContaSocial contaSocial) {
         return new ContaSocialResponse(
@@ -24,7 +25,8 @@ public record ContaSocialResponse(
                 contaSocial.getNomeExibicao(),
                 contaSocial.getEstado(),
                 contaSocial.getUltimoSync(),
-                contaSocial.getCriadoEm()
+                contaSocial.getCriadoEm(),
+                contaSocial.getUrlInstancia()
         );
     }
 }

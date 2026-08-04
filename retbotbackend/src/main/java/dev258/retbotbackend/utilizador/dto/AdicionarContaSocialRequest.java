@@ -20,5 +20,7 @@ public record AdicionarContaSocialRequest(
         @NotBlank(message = "Access token é obrigatório")
         String accessToken,
 
+        String urlInstancia,// obrigatório apenas para Mastodon; null para as restantes plataformas
+
         String refreshToken
 ) {}

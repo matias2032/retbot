@@ -16,6 +16,10 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import dev258.retbotbackend.integration.executor.ExecutorNaoEncontradoException;
+import dev258.retbotbackend.integration.client.ApiClienteException;
+import dev258.retbotbackend.integration.oauth.EstadoOAuthInvalidoException;
+import dev258.retbotbackend.integration.oauth.OAuthClientNaoEncontradoException;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -102,6 +106,30 @@ public class GlobalExceptionHandler {
         return build(HttpStatus.INTERNAL_SERVER_ERROR, "Erro interno inesperado", request);
     }
 
+    @ExceptionHandler(ExecutorNaoEncontradoException.class)
+    public ResponseEntity<ErrorResponse> handleExecutorNaoEncontrado(
+            ExecutorNaoEncontradoException ex, HttpServletRequest request) {
+        return build(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage(), request);
+    }
+
+    @ExceptionHandler(ApiClienteException.class)
+    public ResponseEntity<ErrorResponse> handleApiCliente(
+            ApiClienteException ex, HttpServletRequest request) {
+        return build(HttpStatus.BAD_GATEWAY, ex.getMessage(), request);
+    }
+
+    @ExceptionHandler(EstadoOAuthInvalidoException.class)
+    public ResponseEntity<ErrorResponse> handleEstadoOAuthInvalido(
+            EstadoOAuthInvalidoException ex, HttpServletRequest request) {
+        return build(HttpStatus.BAD_REQUEST, ex.getMessage(), request);
+    }
+
+    @ExceptionHandler(OAuthClientNaoEncontradoException.class)
+    public ResponseEntity<ErrorResponse> handleOAuthClientNaoEncontrado(
+            OAuthClientNaoEncontradoException ex, HttpServletRequest request) {
+        return build(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage(), request);
+    }
+    
     private ResponseEntity<ErrorResponse> build(HttpStatus status, String message, HttpServletRequest request) {
         ErrorResponse body = new ErrorResponse(
                 status.value(),

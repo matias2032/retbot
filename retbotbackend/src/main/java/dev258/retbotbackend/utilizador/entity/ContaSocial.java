@@ -73,6 +73,9 @@ public class ContaSocial {
     @OneToOne(mappedBy = "contaSocial", cascade = CascadeType.ALL, orphanRemoval = true)
     private ConfiguracaoConta configuracaoConta;
 
+    @Column(name = "url_instancia", length = 255)
+    private String urlInstancia;
+    
     @PrePersist
     protected void aoPersistir() {
         this.criadoEm = OffsetDateTime.now();
