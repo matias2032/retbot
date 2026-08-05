@@ -62,6 +62,13 @@ public class UtilizadorService {
 
     // ---------- Conta Social ----------
 
+
+    @Transactional(readOnly = true)
+public List<ContaSocial> listarContasSociais(Long idUtilizador) {
+    buscarUtilizador(idUtilizador); // garante 404 se o utilizador não existir
+    return contaSocialRepository.findByUtilizador_IdUtilizador(idUtilizador);
+}
+
     public ContaSocial adicionarContaSocial(Long idUtilizador, ContaSocial contaSocial) {
         Utilizador utilizador = buscarUtilizador(idUtilizador);
 

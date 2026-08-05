@@ -24,6 +24,11 @@ const contaSocialRepository = {
     return response.data; // ConfiguracaoContaResponse
   },
 
+  listarPorUtilizador: async (idUtilizador) => {
+  const response = await axiosInstance.get(`/utilizadores/${idUtilizador}/contas`);
+  return response.data; // ContaSocialResponse[]
+},
+
   /**
    * Navegação de página inteira, não uma chamada axios: o backend responde
    * com 302 a redirecionar para o provedor OAuth externo, e o utilizador

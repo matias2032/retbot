@@ -23,5 +23,7 @@ app:
     secret: "d3v-l0c4l-0nly-tr0c4-3st3-v4l0r-4ntes-de-pr0d-32chars+"
   oauth:
     callback-base-url: http://localhost:8080
+  frontend:
+    url: http://localhost:5173
   security:
     cookie-secure: false    

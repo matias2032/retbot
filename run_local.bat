@@ -13,13 +13,9 @@ echo.
 echo [1/2] Iniciando o Backend (Spring Boot)...
 start "Retbot Backend" cmd /k "cd /d "%~dp0retbotbackend" && set "JAVA_HOME=C:\Program Files\Java\jdk-23" && mvn spring-boot:run"
 
-:: =======================================================
-:: FUTURO: FRONTEND REACT.JS
-:: Descomente as linhas abaixo quando o frontend estiver pronto
-:: =======================================================
-:: echo.
-:: echo [2/2] Iniciando o Frontend (React)...
-:: start "Retbot Frontend" cmd /k "cd /d "%~dp0retbotfrontend" && npm start"
+echo.
+echo [2/2] Iniciando o Frontend (React + Vite)...
+start "Retbot Frontend" cmd /k "cd /d "%~dp0retbot-frontend" && npm run dev"
 
 echo.
 echo ===================================================

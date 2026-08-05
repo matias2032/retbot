@@ -24,10 +24,11 @@ import dev258.retbotbackend.integration.oauth.OAuthClientFactory;
 import dev258.retbotbackend.integration.oauth.PerfilExternoOAuth;
 import dev258.retbotbackend.integration.oauth.RegistoAplicacaoResponse;
 import dev258.retbotbackend.integration.oauth.TokenOAuthResponse;
-import dev258.retbotbackend.utilizador.entity.ContaSocial;
+// import dev258.retbotbackend.utilizador.entity.ContaSocial;
 import dev258.retbotbackend.utilizador.enums.PlataformaSocial;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatus;
+// import org.springframework.http.HttpStatus;
+import java.util.List;
 
 import java.net.URI;
 
@@ -44,6 +45,9 @@ public class UtilizadorController {
     @Value("${app.oauth.callback-base-url}")
     private String callbackBaseUrl;
 
+    @Value("${app.frontend.url}")
+    private String frontendUrl;
+
     @PostMapping
     public ResponseEntity<UtilizadorResponse> criar(@Valid @RequestBody CriarUtilizadorRequest request) {
         Utilizador utilizador = utilizadorService.criarUtilizador(
@@ -57,6 +61,12 @@ public class UtilizadorController {
         Utilizador utilizador = utilizadorService.buscarUtilizador(idUtilizador);
         return ResponseEntity.ok(UtilizadorResponse.from(utilizador));
     }
+
+    @GetMapping("/{idUtilizador}/contas")
+public ResponseEntity<List<ContaSocialResponse>> listarContasSociais(@PathVariable Long idUtilizador) {
+    List<ContaSocial> contas = utilizadorService.listarContasSociais(idUtilizador);
+    return ResponseEntity.ok(contas.stream().map(ContaSocialResponse::from).toList());
+}
 
     @PutMapping("/{idUtilizador}")
     public ResponseEntity<UtilizadorResponse> actualizar(
@@ -132,47 +142,44 @@ public class UtilizadorController {
                 .build();
     }
 
-    @GetMapping("/oauth/callback/{plataforma}")
-    public ResponseEntity<LigacaoContaSocialResponse> callbackOAuth(
-            @PathVariable PlataformaSocial plataforma,
-            @RequestParam String code,
-            @RequestParam String state) {
+@GetMapping("/oauth/callback/{plataforma}")
+public ResponseEntity<Void> callbackOAuth(
+        @PathVariable PlataformaSocial plataforma,
+        @RequestParam String code,
+        @RequestParam String state) {
 
-        EstadoAutorizacaoOAuth estado = estadoAutorizacaoStore.consumir(state)
-                .orElseThrow(() -> new EstadoOAuthInvalidoException(
-                        "State inválido, expirado, ou já utilizado: " + state));
+    EstadoAutorizacaoOAuth estado = estadoAutorizacaoStore.consumir(state)
+            .orElseThrow(() -> new EstadoOAuthInvalidoException(
+                    "State inválido, expirado, ou já utilizado: " + state));
 
-        OAuthClient oAuthClient = oAuthClientFactory.obterCliente(plataforma);
-        String redirectUri = callbackBaseUrl + "/api/v1/utilizadores/oauth/callback/" + plataforma.name().toLowerCase();
+    OAuthClient oAuthClient = oAuthClientFactory.obterCliente(plataforma);
+    String redirectUri = callbackBaseUrl + "/api/v1/utilizadores/oauth/callback/" + plataforma.name().toLowerCase();
 
-        // Reutiliza a app já registada (cache no OAuthClient) — evita transportar
-        // client_secret através do state, que viaja num URL.
-        RegistoAplicacaoResponse app = oAuthClient.registrarAplicacao(estado.urlInstancia(), redirectUri);
+    RegistoAplicacaoResponse app = oAuthClient.registrarAplicacao(estado.urlInstancia(), redirectUri);
 
-        TokenOAuthResponse token = oAuthClient.trocarCodigoPorToken(
-                estado.urlInstancia(), app.clientId(), app.clientSecret(), redirectUri, code);
+    TokenOAuthResponse token = oAuthClient.trocarCodigoPorToken(
+            estado.urlInstancia(), app.clientId(), app.clientSecret(), redirectUri, code);
 
-        PerfilExternoOAuth perfil = oAuthClient.obterPerfil(estado.urlInstancia(), token.accessToken());
+    PerfilExternoOAuth perfil = oAuthClient.obterPerfil(estado.urlInstancia(), token.accessToken());
 
-        ContaSocial contaSocial = ContaSocial.builder()
-                .plataforma(plataforma)
-                .idUtilizadorPlataforma(perfil.idExterno())
-                .username(perfil.username())
-                .nomeExibicao(perfil.nomeExibicao())
-                .accessToken(token.accessToken())
-                .urlInstancia(estado.urlInstancia())
-                .build();
+    ContaSocial contaSocial = ContaSocial.builder()
+            .plataforma(plataforma)
+            .idUtilizadorPlataforma(perfil.idExterno())
+            .username(perfil.username())
+            .nomeExibicao(perfil.nomeExibicao())
+            .accessToken(token.accessToken())
+            .urlInstancia(estado.urlInstancia())
+            .build();
 
-        ContaSocial guardada = utilizadorService.adicionarContaSocial(estado.idUtilizador(), contaSocial);
+    ContaSocial guardada = utilizadorService.adicionarContaSocial(estado.idUtilizador(), contaSocial);
 
-        LigacaoContaSocialResponse resposta = new LigacaoContaSocialResponse(
-                guardada.getIdContaSocial(), guardada.getPlataforma(),
-                guardada.getUsername(), guardada.getUrlInstancia());
+    String destino = frontendUrl + "/contas?ligado=true&plataforma=" + guardada.getPlataforma().name().toLowerCase();
 
-        return ResponseEntity.ok(resposta);
-    }
-
-    private record LigacaoContaSocialResponse(
-            Long idContaSocial, PlataformaSocial plataforma, String username, String urlInstancia
-    ) {}
+    return ResponseEntity.status(HttpStatus.FOUND)
+            .location(URI.create(destino))
+            .build();
+}
+//     private record LigacaoContaSocialResponse(
+//             Long idContaSocial, PlataformaSocial plataforma, String username, String urlInstancia
+//     ) {}
 }
