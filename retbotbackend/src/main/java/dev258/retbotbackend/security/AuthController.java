@@ -3,12 +3,16 @@ package dev258.retbotbackend.security;
 import dev258.retbotbackend.security.dto.LoginRequest;
 import dev258.retbotbackend.security.dto.LoginResponse;
 import dev258.retbotbackend.security.dto.TokensEmitidos;
+import dev258.retbotbackend.utilizador.dto.UtilizadorResponse;
+import dev258.retbotbackend.utilizador.entity.Utilizador;
+import dev258.retbotbackend.utilizador.service.UtilizadorService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -21,9 +25,16 @@ public class AuthController {
 
     private final AuthService authService;
     private final JwtService jwtService;
+    private final UtilizadorService utilizadorService;
 
     @Value("${app.security.cookie-secure}")
     private boolean cookieSecure;
+
+    @GetMapping("/me")
+    public ResponseEntity<UtilizadorResponse> me(@AuthenticationPrincipal Long idUtilizador) {
+        Utilizador utilizador = utilizadorService.buscarUtilizador(idUtilizador);
+        return ResponseEntity.ok(UtilizadorResponse.from(utilizador));
+    }
 
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest request) {

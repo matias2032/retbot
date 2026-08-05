@@ -23,6 +23,15 @@ login: async ({ email, senha }) => {
   },
 
   /**
+   * Devolve os dados do utilizador autenticado, a partir do access_token
+   * enviado no header Authorization (já tratado pelo axiosInstance).
+   */
+  me: async () => {
+    const response = await axiosInstance.get('/auth/me');
+    return response.data; // esperado: UtilizadorResponse { idUtilizador, nome, email, ... }
+  },
+
+  /**
    * Invalida a sessão no backend e limpa o cookie refresh_token.
    * A limpeza do access_token em memória (tokenStore) é responsabilidade
    * de quem chamar isto (AuthContext), não do repository.

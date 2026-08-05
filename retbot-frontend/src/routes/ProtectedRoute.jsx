@@ -1,20 +1,21 @@
-import { Navigate, Outlet, useLocation } from 'react-router-dom';
-import { useAuth } from '../hooks/useAuth';
+import { Navigate, Outlet } from 'react-router-dom';
+import useAuth from '../hooks/useAuth';
 
-function ProtectedRoute() {
-  const { isAuthenticated, isLoading } = useAuth();
-  const location = useLocation();
+export default function ProtectedRoute() {
+  const { isAuthenticated, isLoading, requerTrocaSenha } = useAuth();
 
   if (isLoading) {
-    // Verificação inicial de sessão (refresh silencioso) ainda a decorrer.
-    return null; // TODO: substituir por um spinner/skeleton quando existir
+    return <div>A carregar...</div>;
   }
 
   if (!isAuthenticated) {
-    return <Navigate to="/login" state={{ from: location }} replace />;
+    return <Navigate to="/login" replace />;
+  }
+
+  // Redireciona obrigatoriamente para /primeiro-acesso se for o primeiro login
+  if (requerTrocaSenha) {
+    return <Navigate to="/primeiro-acesso" replace />;
   }
 
   return <Outlet />;
 }
-
-export default ProtectedRoute;

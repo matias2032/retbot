@@ -9,6 +9,8 @@ public record UtilizadorResponse(
         String nome,
         String email,
         Boolean ativo,
+        Boolean requerTrocaSenha,
+        String perfil,
         OffsetDateTime criadoEm
 ) {
     public static UtilizadorResponse from(Utilizador utilizador) {
@@ -17,6 +19,8 @@ public record UtilizadorResponse(
                 utilizador.getNome(),
                 utilizador.getEmail(),
                 utilizador.getAtivo(),
+                utilizador.getRequerTrocaSenha(),
+                utilizador.getPerfil() != null ? utilizador.getPerfil().getNome() : null,
                 utilizador.getCriadoEm()
         );
     }

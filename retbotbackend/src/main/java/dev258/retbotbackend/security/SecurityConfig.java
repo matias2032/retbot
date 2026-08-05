@@ -21,8 +21,14 @@ public class SecurityConfig {
             "/api-docs/**"
     };
 
-    // Autenticação — login e refresh não podem exigir estar autenticado.
-    private static final String ENDPOINTS_AUTH = "/api/v1/auth/**";
+// Autenticação — login, refresh e logout não podem exigir estar
+    // autenticado. /auth/me fica de fora desta lista de propósito e
+    // cai em anyRequest().authenticated() lá em baixo.
+    private static final String[] ENDPOINTS_AUTH_PUBLICOS = {
+            "/api/v1/auth/login",
+            "/api/v1/auth/refresh",
+            "/api/v1/auth/logout"
+    };
 
     private final JwtFilter jwtFilter;
 
@@ -45,8 +51,8 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         // Registo: só o POST exato fica público; GET/PUT/DELETE
                         // em /api/v1/utilizadores/** continuam protegidos.
-                        .requestMatchers(HttpMethod.POST, "/api/v1/utilizadores").permitAll()
-                        .requestMatchers(ENDPOINTS_AUTH).permitAll()
+.requestMatchers(HttpMethod.POST, "/api/v1/utilizadores").permitAll()
+                        .requestMatchers(ENDPOINTS_AUTH_PUBLICOS).permitAll()
                         .requestMatchers(ENDPOINTS_DOCUMENTACAO).permitAll()
                         // publicacao/** e automacao/** não têm rota pública —
                         // caem naturalmente aqui, exigindo token válido.

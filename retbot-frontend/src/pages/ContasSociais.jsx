@@ -1,30 +1,22 @@
-// src/pages/ContasSociais.jsx
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
-import contaSocialService from '../services/contaSocialService';
+import { useContasSociais } from '../hooks/useContasSociais';
 import { PlataformaSocial } from '../models/enums';
 
 function ContasSociais() {
   const { utilizador } = useAuth();
-  const [contas, setContas] = useState([]);
-  const [carregando, setCarregando] = useState(true);
-  const [erro, setErro] = useState(null);
+  const {
+    contas,
+    carregando,
+    erro,
+    carregarContas,
+    removerConta,
+    iniciarOAuth
+  } = useContasSociais(utilizador?.idUtilizador);
 
   useEffect(() => {
-    if (!utilizador) return;
-
-    contaSocialService
-      .listarPorUtilizador(utilizador.idUtilizador)
-      .then(setContas)
-      .catch(() => setErro('Não foi possível carregar as contas sociais.'))
-      .finally(() => setCarregando(false));
-  }, [utilizador]);
-
-  const ligarNovaConta = (plataforma) => {
-    // TODO: urlInstancia só é relevante para Mastodon; para as outras
-    // plataformas passamos string vazia até termos um seletor de plataforma na UI.
-    contaSocialService.iniciarOAuth(utilizador.idUtilizador, plataforma, '');
-  };
+    carregarContas();
+  }, [carregarContas]);
 
   if (carregando) return <p>A carregar contas sociais...</p>;
   if (erro) return <p role="alert">{erro}</p>;
@@ -42,12 +34,16 @@ function ContasSociais() {
               <strong>{conta.plataforma}</strong> — {conta.nomeExibicao ?? conta.username}
               {' '}
               <span>({conta.estado})</span>
+              {' '}
+              <button onClick={() => removerConta(conta.idContaSocial)}>
+                Remover
+              </button>
             </li>
           ))}
         </ul>
       )}
 
-      <button onClick={() => ligarNovaConta(PlataformaSocial.X)}>
+      <button onClick={() => iniciarOAuth(PlataformaSocial.X)}>
         Ligar nova conta
       </button>
     </div>

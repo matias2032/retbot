@@ -3,6 +3,11 @@ import { criarContaSocialModel } from '../models/ContaSocial';
 import { criarConfiguracaoContaModel } from '../models/ConfiguracaoConta';
 
 const contaSocialService = {
+  listarPorUtilizador: async (idUtilizador) => {
+    const data = await contaSocialRepository.listarPorUtilizador(idUtilizador);
+    return data.map(criarContaSocialModel);
+  },
+
   adicionar: async (idUtilizador, dadosContaSocial) => {
     const data = await contaSocialRepository.adicionar(idUtilizador, dadosContaSocial);
     return criarContaSocialModel(data);

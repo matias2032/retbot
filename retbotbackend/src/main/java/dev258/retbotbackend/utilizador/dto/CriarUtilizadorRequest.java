@@ -5,7 +5,6 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
 public record CriarUtilizadorRequest(
-
         @NotBlank(message = "Nome é obrigatório")
         @Size(max = 150)
         String nome,
@@ -17,5 +16,7 @@ public record CriarUtilizadorRequest(
 
         @NotBlank(message = "Senha é obrigatória")
         @Size(min = 8, message = "Senha deve ter no mínimo 8 caracteres")
-        String senha
+        String senha,
+
+        Long idPerfil
 ) {}

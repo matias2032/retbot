@@ -1,9 +1,9 @@
 import axiosInstance from '../api/axiosInstance';
 
 const utilizadorRepository = {
-  criar: async ({ nome, email, senha }) => {
-    const response = await axiosInstance.post('/utilizadores', { nome, email, senha });
-    return response.data; // UtilizadorResponse
+  criar: async ({ nome, email, senha, idPerfil }) => {
+    const response = await axiosInstance.post('/utilizadores', { nome, email, senha, idPerfil });
+    return response.data;
   },
 
   buscar: async (idUtilizador) => {
@@ -14,6 +14,12 @@ const utilizadorRepository = {
   atualizar: async (idUtilizador, { nome, email }) => {
     const response = await axiosInstance.put(`/utilizadores/${idUtilizador}`, { nome, email });
     return response.data;
+  },
+
+  alterarSenha: async (idUtilizador, novaSenha) => {
+    await axiosInstance.put(`/utilizadores/${idUtilizador}/senha`, novaSenha, {
+      headers: { 'Content-Type': 'text/plain' },
+    });
   },
 };
 

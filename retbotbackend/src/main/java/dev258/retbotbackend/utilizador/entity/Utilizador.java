@@ -38,6 +38,14 @@ public class Utilizador {
     @Builder.Default
     private Boolean ativo = true;
 
+    @Column(name = "requer_troca_senha", nullable = false)
+    @Builder.Default
+    private Boolean requerTrocaSenha = true;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_perfil")
+    private Perfil perfil;
+
     @Column(name = "criado_em", nullable = false, updatable = false)
     private OffsetDateTime criadoEm;
 

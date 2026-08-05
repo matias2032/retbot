@@ -48,12 +48,20 @@ public class UtilizadorController {
     @Value("${app.frontend.url}")
     private String frontendUrl;
 
-    @PostMapping
+@PostMapping
     public ResponseEntity<UtilizadorResponse> criar(@Valid @RequestBody CriarUtilizadorRequest request) {
         Utilizador utilizador = utilizadorService.criarUtilizador(
-                request.nome(), request.email(), request.senha());
+                request.nome(), request.email(), request.senha(), request.idPerfil());
 
         return ResponseEntity.status(HttpStatus.CREATED).body(UtilizadorResponse.from(utilizador));
+    }
+
+    @PutMapping("/{idUtilizador}/senha")
+    public ResponseEntity<Void> alterarSenha(
+            @PathVariable Long idUtilizador,
+            @RequestBody String novaSenha) {
+        utilizadorService.alterarSenha(idUtilizador, novaSenha);
+        return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/{idUtilizador}")

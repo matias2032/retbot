@@ -2,11 +2,13 @@ package dev258.retbotbackend.utilizador.service;
 
 import dev258.retbotbackend.utilizador.entity.ConfiguracaoConta;
 import dev258.retbotbackend.utilizador.entity.ContaSocial;
+import dev258.retbotbackend.utilizador.entity.Perfil;
 import dev258.retbotbackend.utilizador.entity.Utilizador;
 import dev258.retbotbackend.utilizador.exception.ContaSocialException;
 import dev258.retbotbackend.utilizador.exception.UtilizadorNaoEncontradoException;
 import dev258.retbotbackend.utilizador.repository.ConfiguracaoContaRepository;
 import dev258.retbotbackend.utilizador.repository.ContaSocialRepository;
+import dev258.retbotbackend.utilizador.repository.PerfilRepository;
 import dev258.retbotbackend.utilizador.repository.UtilizadorRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -23,18 +25,25 @@ import java.util.List;
 @Transactional
 public class UtilizadorService {
 
-    private final UtilizadorRepository utilizadorRepository;
+private final UtilizadorRepository utilizadorRepository;
     private final ContaSocialRepository contaSocialRepository;
     private final ConfiguracaoContaRepository configuracaoContaRepository;
+    private final PerfilRepository perfilRepository;
     private final PasswordEncoder passwordEncoder;
 
     private static final SecureRandom SECURE_RANDOM = new SecureRandom();
 
     // ---------- Utilizador ----------
 
-    public Utilizador criarUtilizador(String nome, String email, String senhaPlano) {
+public Utilizador criarUtilizador(String nome, String email, String senhaPlano, Long idPerfil) {
         if (utilizadorRepository.existsByEmail(email)) {
             throw new IllegalArgumentException("Já existe um utilizador com este email: " + email);
+        }
+
+        Perfil perfil = null;
+        if (idPerfil != null) {
+            perfil = perfilRepository.findById(idPerfil)
+                    .orElseThrow(() -> new IllegalArgumentException("Perfil não encontrado com id: " + idPerfil));
         }
 
         Utilizador utilizador = Utilizador.builder()
@@ -42,9 +51,18 @@ public class UtilizadorService {
                 .email(email)
                 .senhaHash(passwordEncoder.encode(senhaPlano))
                 .ativo(true)
+                .requerTrocaSenha(true)
+                .perfil(perfil)
                 .build();
 
         return utilizadorRepository.save(utilizador);
+    }
+
+    public void alterarSenha(Long idUtilizador, String novaSenha) {
+        Utilizador utilizador = buscarUtilizador(idUtilizador);
+        utilizador.setSenhaHash(passwordEncoder.encode(novaSenha));
+        utilizador.setRequerTrocaSenha(false);
+        utilizadorRepository.save(utilizador);
     }
 
     public Utilizador actualizarUtilizador(Long idUtilizador, String nome, String email) {

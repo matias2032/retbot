@@ -1,6 +1,5 @@
-// Espelham os enums Java (utilizador.enums.PlataformaSocial / EstadoConta).
-// Mantidos sincronizados manualmente — se o backend adicionar uma plataforma,
-// atualizar aqui também.
+// Espelham os enums Java.
+// Mantidos sincronizados manualmente.
 
 export const PlataformaSocial = Object.freeze({
   X: 'X',
@@ -15,4 +14,21 @@ export const EstadoConta = Object.freeze({
   PAUSADA: 'PAUSADA',
   REVOGADA: 'REVOGADA',
   ERRO_AUTENTICACAO: 'ERRO_AUTENTICACAO',
+});
+
+export const EstadoAgendamento = Object.freeze({
+  PENDENTE: 'PENDENTE',
+  EM_EXECUCAO: 'EM_EXECUCAO',
+  CONCLUIDO: 'CONCLUIDO',
+  FALHOU: 'FALHOU',
+  CANCELADO: 'CANCELADO'
+});
+
+export const TipoAcao = Object.freeze({
+  PUBLICAR: 'PUBLICAR',
+  REPOSTAR: 'REPOSTAR',
+  CURTIR: 'CURTIR',
+  RESPONDER: 'RESPONDER',
+  SEGUIR: 'SEGUIR',
+  DEIXAR_DE_SEGUIR: 'DEIXAR_DE_SEGUIR'
 });
