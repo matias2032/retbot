@@ -40,7 +40,7 @@ public class AuthService {
      * continua criptograficamente válido até expirar (não há blacklist),
      * mas o cookie no browser é sempre substituído pelo novo.
      */
-    public TokensEmitidos refresh(String refreshToken) {
+public TokensEmitidos refresh(String refreshToken) {
         Map<String, Object> payload = jwtService.validarToken(refreshToken);
 
         if (!"refresh".equals(payload.get("type"))) {
@@ -51,6 +51,12 @@ public class AuthService {
 
         Utilizador utilizador = utilizadorRepository.findById(idUtilizador)
                 .orElseThrow(() -> new CredenciaisInvalidasException("Utilizador não encontrado"));
+
+        // Revalida o estado ativo aqui também: um utilizador desativado depois de
+        // já ter um refresh_token válido não pode continuar a renovar o access_token
+        if (Boolean.FALSE.equals(utilizador.getAtivo())) {
+            throw new CredenciaisInvalidasException("Conta desativada");
+        }
 
         return emitirTokens(utilizador);
     }

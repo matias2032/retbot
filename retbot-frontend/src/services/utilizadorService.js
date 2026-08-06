@@ -7,6 +7,11 @@ const utilizadorService = {
     return criarUtilizadorModel(data);
   },
 
+  listar: async () => {
+    const dados = await utilizadorRepository.listar();
+    return dados.map(criarUtilizadorModel);
+  },
+
   buscar: async (idUtilizador) => {
     const data = await utilizadorRepository.buscar(idUtilizador);
     return criarUtilizadorModel(data);
@@ -17,8 +22,13 @@ const utilizadorService = {
     return criarUtilizadorModel(data);
   },
 
-  alterarSenha: async (idUtilizador, novaSenha) => {
+alterarSenha: async (idUtilizador, novaSenha) => {
     await utilizadorRepository.alterarSenha(idUtilizador, novaSenha);
+  },
+
+  alternarEstado: async (idUtilizador) => {
+    const data = await utilizadorRepository.alternarEstado(idUtilizador);
+    return criarUtilizadorModel(data);
   },
 };
 

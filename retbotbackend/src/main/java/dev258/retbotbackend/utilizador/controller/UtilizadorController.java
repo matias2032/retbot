@@ -56,6 +56,12 @@ public class UtilizadorController {
         return ResponseEntity.status(HttpStatus.CREATED).body(UtilizadorResponse.from(utilizador));
     }
 
+    @GetMapping
+    public ResponseEntity<List<UtilizadorResponse>> listar() {
+        List<Utilizador> utilizadores = utilizadorService.listarUtilizadores();
+        return ResponseEntity.ok(utilizadores.stream().map(UtilizadorResponse::from).toList());
+    }
+
     @PutMapping("/{idUtilizador}/senha")
     public ResponseEntity<Void> alterarSenha(
             @PathVariable Long idUtilizador,
@@ -76,7 +82,7 @@ public ResponseEntity<List<ContaSocialResponse>> listarContasSociais(@PathVariab
     return ResponseEntity.ok(contas.stream().map(ContaSocialResponse::from).toList());
 }
 
-    @PutMapping("/{idUtilizador}")
+@PutMapping("/{idUtilizador}")
     public ResponseEntity<UtilizadorResponse> actualizar(
             @PathVariable Long idUtilizador,
             @Valid @RequestBody ActualizarUtilizadorRequest request) {
@@ -84,6 +90,12 @@ public ResponseEntity<List<ContaSocialResponse>> listarContasSociais(@PathVariab
         Utilizador utilizador = utilizadorService.actualizarUtilizador(
                 idUtilizador, request.nome(), request.email());
 
+        return ResponseEntity.ok(UtilizadorResponse.from(utilizador));
+    }
+
+    @PatchMapping("/{idUtilizador}/estado")
+    public ResponseEntity<UtilizadorResponse> alternarEstadoAtivo(@PathVariable Long idUtilizador) {
+        Utilizador utilizador = utilizadorService.alternarEstadoAtivo(idUtilizador);
         return ResponseEntity.ok(UtilizadorResponse.from(utilizador));
     }
 

@@ -49,6 +49,21 @@ const alterarSenha = async (idUtilizador, novaSenha) => {
     }
   };
 
+  const alternarEstado = async (idUtilizador) => {
+    setCarregando(true);
+    setErro(null);
+    try {
+      const atualizado = await utilizadorService.alternarEstado(idUtilizador);
+      setUtilizador(atualizado);
+      return atualizado;
+    } catch (err) {
+      setErro('Erro ao alternar estado do utilizador.');
+      throw err;
+    } finally {
+      setCarregando(false);
+    }
+  };
+
   return {
     utilizador,
     carregando,
@@ -56,5 +71,6 @@ const alterarSenha = async (idUtilizador, novaSenha) => {
     buscarUtilizador,
     atualizarUtilizador,
     alterarSenha,
+    alternarEstado,
   };
 }

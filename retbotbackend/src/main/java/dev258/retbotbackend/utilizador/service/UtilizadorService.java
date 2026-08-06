@@ -31,25 +31,39 @@ private final UtilizadorRepository utilizadorRepository;
     private final PerfilRepository perfilRepository;
     private final PasswordEncoder passwordEncoder;
 
-    private static final SecureRandom SECURE_RANDOM = new SecureRandom();
+private static final SecureRandom SECURE_RANDOM = new SecureRandom();
+
+// Senha atribuída quando o admin não informa uma senha manualmente
+    private static final String SENHA_PADRAO = "12345678";
+
+    // idPerfil atribuído quando o admin não escolhe um perfil (2 = operador)
+    private static final Long ID_PERFIL_OPERADOR_PADRAO = 2L;
+
+    // idPerfil que nunca deve aparecer na listagem de utilizadores (1 = administrador)
+    private static final Long ID_PERFIL_ADMIN = 1L;
 
     // ---------- Utilizador ----------
+
+    @Transactional(readOnly = true)
+    public List<Utilizador> listarUtilizadores() {
+        return utilizadorRepository.findAllExcluindoPerfil(ID_PERFIL_ADMIN);
+    }
 
 public Utilizador criarUtilizador(String nome, String email, String senhaPlano, Long idPerfil) {
         if (utilizadorRepository.existsByEmail(email)) {
             throw new IllegalArgumentException("Já existe um utilizador com este email: " + email);
         }
 
-        Perfil perfil = null;
-        if (idPerfil != null) {
-            perfil = perfilRepository.findById(idPerfil)
-                    .orElseThrow(() -> new IllegalArgumentException("Perfil não encontrado com id: " + idPerfil));
-        }
+        Long idPerfilEfetivo = idPerfil != null ? idPerfil : ID_PERFIL_OPERADOR_PADRAO;
+        Perfil perfil = perfilRepository.findById(idPerfilEfetivo)
+                .orElseThrow(() -> new IllegalArgumentException("Perfil não encontrado com id: " + idPerfilEfetivo));
+
+        String senhaEfetiva = (senhaPlano == null || senhaPlano.isBlank()) ? SENHA_PADRAO : senhaPlano;
 
         Utilizador utilizador = Utilizador.builder()
                 .nome(nome)
                 .email(email)
-                .senhaHash(passwordEncoder.encode(senhaPlano))
+                .senhaHash(passwordEncoder.encode(senhaEfetiva))
                 .ativo(true)
                 .requerTrocaSenha(true)
                 .perfil(perfil)
@@ -65,10 +79,17 @@ public Utilizador criarUtilizador(String nome, String email, String senhaPlano, 
         utilizadorRepository.save(utilizador);
     }
 
-    public Utilizador actualizarUtilizador(Long idUtilizador, String nome, String email) {
+public Utilizador actualizarUtilizador(Long idUtilizador, String nome, String email) {
         Utilizador utilizador = buscarUtilizador(idUtilizador);
         utilizador.setNome(nome);
         utilizador.setEmail(email);
+        return utilizadorRepository.save(utilizador);
+    }
+
+    // Alterna o estado ativo/inactive do utilizador (usado pelo botão toggle na listagem)
+    public Utilizador alternarEstadoAtivo(Long idUtilizador) {
+        Utilizador utilizador = buscarUtilizador(idUtilizador);
+        utilizador.setAtivo(!utilizador.getAtivo());
         return utilizadorRepository.save(utilizador);
     }
 

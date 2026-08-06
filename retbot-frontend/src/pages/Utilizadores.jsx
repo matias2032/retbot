@@ -1,14 +1,15 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
-import axiosInstance from '../api/axiosInstance';
+import { Link, useNavigate } from 'react-router-dom';
+import utilizadorService from '../services/utilizadorService';
 import { useLogger } from '../hooks/useLogger';
 
 export default function Utilizadores() {
   const [utilizadores, setUtilizadores] = useState([]);
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState('');
-  
-  // Hook do Logger
+  const [aAlternar, setAAlternar] = useState(null); // idUtilizador em processamento, evita duplo-clique
+
+  const navigate = useNavigate();
   const { logAction } = useLogger();
 
   useEffect(() => {
@@ -16,21 +17,19 @@ export default function Utilizadores() {
       logAction('INICIAR_BUSCA_UTILIZADORES');
 
       try {
-        const response = await axiosInstance.get('/utilizadores');
-        setUtilizadores(response.data);
+        const dados = await utilizadorService.listar();
+        setUtilizadores(dados);
 
-        // Registo de Sucesso
-        logAction('UTILIZADORES_CARREGADOS_SUCESSO', { 
-          totalRecebido: response.data.length 
+        logAction('UTILIZADORES_CARREGADOS_SUCESSO', {
+          totalRecebido: dados.length
         });
       } catch (err) {
         console.error(err);
         setErro('Erro ao carregar a lista de utilizadores.');
 
-        // Registo de Falha
-        logAction('ERRO_BUSCA_UTILIZADORES', { 
+        logAction('ERRO_BUSCA_UTILIZADORES', {
           status: err.response?.status,
-          mensagem: err.message 
+          mensagem: err.message
         });
       } finally {
         setCarregando(false);
@@ -40,12 +39,44 @@ export default function Utilizadores() {
     buscarUtilizadores();
   }, []);
 
+  const handleVerDetalhes = (idUtilizador) => {
+    logAction('CLIQUE_VER_DETALHES_UTILIZADOR', { idUtilizador });
+    navigate(`/utilizadores/${idUtilizador}`);
+  };
+
+  const handleAlternarEstado = async (idUtilizador) => {
+    logAction('CLIQUE_ALTERNAR_ESTADO_UTILIZADOR', { idUtilizador });
+    setAAlternar(idUtilizador);
+
+    try {
+      const atualizado = await utilizadorService.alternarEstado(idUtilizador);
+
+      setUtilizadores((prev) =>
+        prev.map((u) => (u.idUtilizador === idUtilizador ? atualizado : u))
+      );
+
+      logAction('ALTERNAR_ESTADO_UTILIZADOR_SUCESSO', {
+        idUtilizador,
+        novoEstado: atualizado.ativo
+      });
+    } catch (err) {
+      logAction('ERRO_ALTERNAR_ESTADO_UTILIZADOR', {
+        idUtilizador,
+        status: err.response?.status,
+        mensagem: err.message
+      });
+      setErro('Erro ao alternar o estado do utilizador.');
+    } finally {
+      setAAlternar(null);
+    }
+  };
+
   return (
     <div className="page-container">
       <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
         <h2>Gestão de Utilizadores</h2>
         <Link 
-          to="/signup" 
+          to="/utilizadores/novo" 
           className="btn-primary" 
           style={{ padding: '0.5rem 1rem', textDecoration: 'none' }}
           onClick={() => logAction('CLIQUE_NOVO_UTILIZADOR_BOTAO')}
@@ -66,6 +97,7 @@ export default function Utilizadores() {
               <th>Perfil</th>
               <th>Estado</th>
               <th>Troca Pendente</th>
+              <th>Ações</th>
             </tr>
           </thead>
           <tbody>
@@ -76,6 +108,20 @@ export default function Utilizadores() {
                 <td>{u.perfil || 'Sem Perfil'}</td>
                 <td>{u.ativo ? 'Ativo' : 'Inativo'}</td>
                 <td>{u.requerTrocaSenha ? 'Sim' : 'Não'}</td>
+                <td>
+                  <button onClick={() => handleVerDetalhes(u.idUtilizador)}>
+                    Ver detalhes
+                  </button>
+                  {' '}
+                  <button
+                    onClick={() => handleAlternarEstado(u.idUtilizador)}
+                    disabled={aAlternar === u.idUtilizador}
+                  >
+                    {aAlternar === u.idUtilizador
+                      ? 'A processar...'
+                      : u.ativo ? 'Desactivar' : 'Activar'}
+                  </button>
+                </td>
               </tr>
             ))}
           </tbody>
@@ -84,3 +130,5 @@ export default function Utilizadores() {
     </div>
   );
 }
+
+

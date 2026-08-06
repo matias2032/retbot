@@ -14,7 +14,7 @@ public record CriarUtilizadorRequest(
         @Size(max = 200)
         String email,
 
-        @NotBlank(message = "Senha é obrigatória")
+        // Agora opcional: se vier em branco/omitida, o service atribui a senha padrão
         @Size(min = 8, message = "Senha deve ter no mínimo 8 caracteres")
         String senha,
 

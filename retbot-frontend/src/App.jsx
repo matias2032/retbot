@@ -1,10 +1,11 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import ProtectedRoute from './routes/ProtectedRoute';
 import Login from './pages/Login';
-import SignUp from './pages/SignUp';
 import PrimeiroAcesso from './pages/PrimeiroAcesso';
 import Dashboard from './pages/Dashboard';
 import Utilizadores from './pages/Utilizadores';
+import CriarUtilizador from './pages/CriarUtilizador';
+import DetalheUtilizador from './pages/DetalheUtilizador';
 import ContasSociais from './pages/ContasSociais';
 import Publicacoes from './pages/Publicacoes';
 import Agendamentos from './pages/Agendamentos';
@@ -18,7 +19,7 @@ function App() {
   return (
     <Routes>
       <Route path="/login" element={<Login />} />
-      <Route path="/signup" element={<SignUp />} />
+
 
       <Route
         path="/primeiro-acesso"
@@ -35,8 +36,10 @@ function App() {
 
       <Route element={<ProtectedRoute />}>
         {/* Rota inicial apontando para o Dashboard */}
-        <Route path="/" element={<Dashboard />} />
-        <Route path="/utilizadores" element={<Utilizadores />} />
+<Route path="/" element={<Dashboard />} />
+<Route path="/utilizadores" element={<Utilizadores />} />
+        <Route path="/utilizadores/novo" element={<CriarUtilizador />} />
+        <Route path="/utilizadores/:idUtilizador" element={<DetalheUtilizador />} />
         <Route path="/contas" element={<ContasSociais />} />
         <Route path="/publicacoes" element={<Publicacoes />} />
         <Route path="/agendamentos" element={<Agendamentos />} />
