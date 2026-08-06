@@ -1,11 +1,13 @@
 import { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
+import { useLogger } from '../hooks/useLogger';
 
 function Login() {
   const { login } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  const { logAction } = useLogger();
 
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
@@ -19,11 +21,17 @@ function Login() {
     setErro(null);
     setAEnviar(true);
 
+    // Regista a tentativa de login (apenas o email)
+    logAction('SUBMIT_LOGIN', { email });
+
     try {
       await login({ email, senha });
+      
+      logAction('LOGIN_SUCESSO', { email, destino });
       navigate(destino, { replace: true });
     } catch {
       // authRepository não distingue 401 de erro de rede — ambos chegam aqui.
+      logAction('ERRO_LOGIN', { email });
       setErro('Email ou senha inválidos.');
     } finally {
       setAEnviar(false);

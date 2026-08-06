@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { useContasSociais } from '../hooks/useContasSociais';
+import { useLogger } from '../hooks/useLogger';
 import agendamentoService from '../services/agendamentoService';
 import publicacaoService from '../services/publicacaoService';
 import { TipoAcao } from '../models/enums';
@@ -8,7 +9,8 @@ import { TipoAcao } from '../models/enums';
 function Agendamentos() {
   const { utilizador } = useAuth();
   const { contas } = useContasSociais(utilizador?.idUtilizador);
-  
+  const { logAction } = useLogger();
+
   const [agendamentos, setAgendamentos] = useState([]);
   const [publicacoes, setPublicacoes] = useState([]);
   const [carregando, setCarregando] = useState(true);
@@ -25,6 +27,8 @@ function Agendamentos() {
   useEffect(() => {
     if (!utilizador) return;
 
+    logAction('CARREGAR_AGENDAMENTOS_INICIO', { idUtilizador: utilizador.idUtilizador });
+
     Promise.all([
       agendamentoService.listarPorUtilizador(utilizador.idUtilizador),
       publicacaoService.listarPorUtilizador(utilizador.idUtilizador)
@@ -32,8 +36,15 @@ function Agendamentos() {
       .then(([dadosAgendamentos, dadosPublicacoes]) => {
         setAgendamentos(dadosAgendamentos);
         setPublicacoes(dadosPublicacoes);
+        logAction('CARREGAR_AGENDAMENTOS_SUCESSO', {
+          totalAgendamentos: dadosAgendamentos.length,
+          totalPublicacoes: dadosPublicacoes.length
+        });
       })
-      .catch(() => setErro('Erro ao carregar dados de agendamentos.'))
+      .catch((err) => {
+        setErro('Erro ao carregar dados de agendamentos.');
+        logAction('ERRO_CARREGAR_AGENDAMENTOS', { mensagem: err?.message });
+      })
       .finally(() => setCarregando(false));
   }, [utilizador]);
 
@@ -54,9 +65,13 @@ function Agendamentos() {
       repetirMinutos: form.repetirMinutos ? Number(form.repetirMinutos) : null,
     };
 
+    logAction('SUBMIT_CRIAR_AGENDAMENTO', payload);
+
     try {
       const novoAgendamento = await agendamentoService.criar(payload);
       setAgendamentos((prev) => [novoAgendamento, ...prev]);
+      logAction('CRIAR_AGENDAMENTO_SUCESSO', { idAgendamento: novoAgendamento.idAgendamento });
+
       setForm({
         idContaSocial: '',
         idPublicacao: '',
@@ -64,19 +79,24 @@ function Agendamentos() {
         agendadoPara: '',
         repetirMinutos: '',
       });
-    } catch {
+    } catch (err) {
       setErro('Erro ao criar agendamento.');
+      logAction('ERRO_CRIAR_AGENDAMENTO', { mensagem: err?.message });
     }
   };
 
   const handleCancelar = async (idAgendamento) => {
+    logAction('SOLICITAR_CANCELAMENTO_AGENDAMENTO', { idAgendamento });
+
     try {
       await agendamentoService.cancelar(idAgendamento);
       setAgendamentos((prev) =>
         prev.map((a) => (a.idAgendamento === idAgendamento ? { ...a, estado: 'CANCELADO' } : a))
       );
-    } catch {
+      logAction('CANCELAR_AGENDAMENTO_SUCESSO', { idAgendamento });
+    } catch (err) {
       setErro('Erro ao cancelar agendamento.');
+      logAction('ERRO_CANCELAR_AGENDAMENTO', { idAgendamento, mensagem: err?.message });
     }
   };
 

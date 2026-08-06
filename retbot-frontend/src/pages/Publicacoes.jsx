@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { usePublicacoes } from '../hooks/usePublicacoes';
+import { useLogger } from '../hooks/useLogger';
 
 function Publicacoes() {
   const [idContaSocial, setIdContaSocial] = useState('');
@@ -7,22 +8,40 @@ function Publicacoes() {
   const [idPublicacaoExterna, setIdPublicacaoExterna] = useState('');
   
   const { publicacoes, carregando, erro, carregarPublicacoes, criarPublicacao } = usePublicacoes();
+  const { logAction } = useLogger();
 
-  const handleBuscar = (e) => {
+  const handleBuscar = async (e) => {
     e.preventDefault();
-    if (idContaSocial) carregarPublicacoes(idContaSocial);
+    if (idContaSocial) {
+      logAction('BUSCAR_PUBLICACOES', { idContaSocial });
+      await carregarPublicacoes(idContaSocial);
+    }
   };
 
   const handleCriar = async (e) => {
     e.preventDefault();
-    await criarPublicacao({
+
+    logAction('SUBMIT_CRIAR_PUBLICACAO', { 
       idContaSocial: Number(idContaSocial),
-      idPublicacaoExterna,
-      texto,
-      publicadoEm: new Date().toISOString()
+      idPublicacaoExterna 
     });
-    setTexto('');
-    setIdPublicacaoExterna('');
+
+    try {
+      await criarPublicacao({
+        idContaSocial: Number(idContaSocial),
+        idPublicacaoExterna,
+        texto,
+        publicadoEm: new Date().toISOString()
+      });
+
+      logAction('CRIAR_PUBLICACAO_SUCESSO', { idPublicacaoExterna });
+      setTexto('');
+      setIdPublicacaoExterna('');
+    } catch (err) {
+      logAction('ERRO_CRIAR_PUBLICACAO', { 
+        mensagem: err?.message || 'Erro ao criar publicação' 
+      });
+    }
   };
 
   return (

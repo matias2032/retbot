@@ -1,10 +1,13 @@
 import { useState } from 'react';
 import { useExecucoes } from '../hooks/useExecucoes';
 import { useRateLimits } from '../hooks/useRateLimits';
+import { useLogger } from '../hooks/useLogger';
 
 function Automacao() {
   const [idAgendamento, setIdAgendamento] = useState('');
   const [idContaSocial, setIdContaSocial] = useState('');
+
+  const { logAction } = useLogger();
 
   const { 
     execucoes, 
@@ -21,14 +24,25 @@ function Automacao() {
     carregarPorConta 
   } = useRateLimits();
 
-  const handleBuscarExecucoes = (e) => {
+  const handleBuscarRateLimits = async (e) => {
     e.preventDefault();
-    if (idAgendamento) carregarPorAgendamento(Number(idAgendamento));
+    if (idContaSocial) {
+      logAction('BUSCAR_RATE_LIMITS', { idContaSocial: Number(idContaSocial) });
+      await carregarPorConta(Number(idContaSocial));
+    }
   };
 
-  const handleBuscarRateLimits = (e) => {
+  const handleBuscarExecucoes = async (e) => {
     e.preventDefault();
-    if (idContaSocial) carregarPorConta(Number(idContaSocial));
+    if (idAgendamento) {
+      logAction('BUSCAR_EXECUCOES_AGENDAMENTO', { idAgendamento: Number(idAgendamento) });
+      await carregarPorAgendamento(Number(idAgendamento));
+    }
+  };
+
+  const handleVerFalhadas = async () => {
+    logAction('BUSCAR_EXECUCOES_FALHADAS');
+    await carregarFalhadas();
   };
 
   return (
@@ -75,7 +89,7 @@ function Automacao() {
             required 
           />
           <button type="submit">Listar por Agendamento</button>
-          <button type="button" onClick={carregarFalhadas}>Ver Apenas Falhas</button>
+          <button type="button" onClick={handleVerFalhadas}>Ver Apenas Falhas</button>
         </form>
 
         {carregandoExec && <p>A carregar execuções...</p>}

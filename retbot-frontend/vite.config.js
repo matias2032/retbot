@@ -1,7 +1,12 @@
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
+import terminal from 'vite-plugin-terminal';
 
-// https://vite.dev/config/
 export default defineConfig({
-  plugins: [react()],
-})
+  plugins: [
+    react(),
+    terminal({
+      console: 'remote', // Redireciona os console.log() normais diretamente para o terminal
+    }),
+  ],
+});

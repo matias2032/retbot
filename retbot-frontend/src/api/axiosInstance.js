@@ -12,7 +12,8 @@ const axiosInstance = axios.create({
 axiosInstance.interceptors.request.use((config) => {
   const token = getAccessToken();
   if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
+    // Garante a atribuição correta do cabeçalho em instâncias AxiosHeaders
+    config.headers.set('Authorization', `Bearer ${token}`);
   }
   return config;
 });
@@ -43,7 +44,7 @@ axiosInstance.interceptors.response.use(
       const { accessToken } = await refreshPromise;
       setAccessToken(accessToken);
 
-      config.headers.Authorization = `Bearer ${accessToken}`;
+      config.headers.set('Authorization', `Bearer ${accessToken}`);
       return axiosInstance(config);
     } catch (refreshError) {
       clearAccessToken();

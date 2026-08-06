@@ -9,7 +9,7 @@ import ContasSociais from './pages/ContasSociais';
 import Publicacoes from './pages/Publicacoes';
 import Agendamentos from './pages/Agendamentos';
 import Automacao from './pages/Automacao';
-import useAuth from './hooks/useAuth';
+import { useAuth } from './hooks/useAuth';
 import './App.css';
 
 function App() {

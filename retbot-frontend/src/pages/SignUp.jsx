@@ -1,9 +1,12 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import utilizadorService from '../services/utilizadorService';
+import { useLogger } from '../hooks/useLogger';
 
 function SignUp() {
   const navigate = useNavigate();
+  const { logAction } = useLogger();
+
   const [formData, setFormData] = useState({
     nome: '',
     email: '',
@@ -22,11 +25,26 @@ function SignUp() {
     setErro(null);
     setAEnviar(true);
 
+    // Regista a tentativa de criação de conta (sem expor a senha)
+    logAction('SUBMIT_CRIAR_CONTA', { 
+      nome: formData.nome, 
+      email: formData.email 
+    });
+
     try {
       await utilizadorService.criar(formData);
+      
+      logAction('CRIAR_CONTA_SUCESSO', { email: formData.email });
       navigate('/login', { state: { mensagem: 'Conta criada com sucesso! Faça login.' } });
     } catch (err) {
-      setErro(err.response?.data?.mensagem || 'Erro ao criar conta. Tente novamente.');
+      const mensagemErro = err.response?.data?.mensagem || 'Erro ao criar conta. Tente novamente.';
+      
+      logAction('ERRO_CRIAR_CONTA', { 
+        status: err.response?.status, 
+        mensagem: mensagemErro 
+      });
+
+      setErro(mensagemErro);
     } finally {
       setAEnviar(false);
     }
@@ -78,7 +96,13 @@ function SignUp() {
       </form>
 
       <p>
-        Já tem uma conta? <Link to="/login">Entrar</Link>
+        Já tem uma conta?{' '}
+        <Link 
+          to="/login" 
+          onClick={() => logAction('CLIQUE_VOLTAR_PARA_LOGIN')}
+        >
+          Entrar
+        </Link>
       </p>
     </div>
   );

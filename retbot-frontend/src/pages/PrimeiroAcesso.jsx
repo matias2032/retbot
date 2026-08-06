@@ -1,12 +1,14 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import useAuth from '../hooks/useAuth';
-import useUtilizador from '../hooks/useUtilizador';
+import { useAuth } from '../hooks/useAuth';
+import { useUtilizador } from '../hooks/useUtilizador';
+import { useLogger } from '../hooks/useLogger';
 
 export default function PrimeiroAcesso() {
   const { utilizador, atualizarEstadoUtilizador, logout } = useAuth();
   const { alterarSenha, carregando } = useUtilizador();
   const navigate = useNavigate();
+  const { logAction } = useLogger();
 
   const [novaSenha, setNovaSenha] = useState('');
   const [confirmarSenha, setConfirmarSenha] = useState('');
@@ -17,22 +19,45 @@ export default function PrimeiroAcesso() {
     setErro('');
 
     if (novaSenha.length < 8) {
-      setErro('A senha deve ter no mínimo 8 caracteres.');
+      const msgErro = 'A senha deve ter no mínimo 8 caracteres.';
+      setErro(msgErro);
+      logAction('VALIDACAO_PRIMEIRO_ACESSO_FALHOU', { motivo: msgErro });
       return;
     }
 
     if (novaSenha !== confirmarSenha) {
-      setErro('As senhas não coincidem.');
+      const msgErro = 'As senhas não coincidem.';
+      setErro(msgErro);
+      logAction('VALIDACAO_PRIMEIRO_ACESSO_FALHOU', { motivo: msgErro });
       return;
     }
 
+    logAction('SUBMIT_ALTERAR_SENHA_PRIMEIRO_ACESSO', { 
+      idUtilizador: utilizador?.idUtilizador 
+    });
+
     try {
       await alterarSenha(utilizador.idUtilizador, novaSenha);
+
+      logAction('ALTERAR_SENHA_PRIMEIRO_ACESSO_SUCESSO', { 
+        idUtilizador: utilizador?.idUtilizador 
+      });
+
       atualizarEstadoUtilizador({ requerTrocaSenha: false });
       navigate('/', { replace: true });
-    } catch {
+    } catch (err) {
+      logAction('ERRO_ALTERAR_SENHA_PRIMEIRO_ACESSO', { 
+        idUtilizador: utilizador?.idUtilizador,
+        mensagem: err?.message || 'Erro ao atualizar a senha' 
+      });
+
       setErro('Erro ao atualizar a senha. Tente novamente.');
     }
+  };
+
+  const handleLogout = () => {
+    logAction('CLIQUE_SAIR_PRIMEIRO_ACESSO', { idUtilizador: utilizador?.idUtilizador });
+    logout();
   };
 
   return (
@@ -74,7 +99,12 @@ export default function PrimeiroAcesso() {
             <button type="submit" disabled={carregando} className="btn-primary">
               {carregando ? 'A guardar...' : 'Atualizar Senha e Entrar'}
             </button>
-            <button type="button" onClick={logout} disabled={carregando} className="btn-secondary">
+            <button 
+              type="button" 
+              onClick={handleLogout} 
+              disabled={carregando} 
+              className="btn-secondary"
+            >
               Sair / Cancelar
             </button>
           </div>

@@ -1,8 +1,10 @@
 import { Link } from 'react-router-dom';
-import useAuth from '../hooks/useAuth';
+import { useAuth } from '../hooks/useAuth';
+import { useLogger } from '../hooks/useLogger';
 
 export default function Dashboard() {
   const { utilizador, logout } = useAuth();
+  const { logAction } = useLogger();
 
   const modulos = [
     {
@@ -37,12 +39,19 @@ export default function Dashboard() {
     },
   ];
 
+  const handleLogout = () => {
+    logAction('CLIQUE_LOGOUT_DASHBOARD', { 
+      idUtilizador: utilizador?.idUtilizador 
+    });
+    logout();
+  };
+
   return (
     <div style={{ maxWidth: '1000px', margin: '2rem auto', padding: '0 1rem', fontFamily: 'sans-serif' }}>
       <header
         style={{
           display: 'flex',
-          justify: 'space-between',
+          justifyContent: 'space-between',
           alignItems: 'center',
           marginBottom: '2.5rem',
           borderBottom: '1px solid #e2e8f0',
@@ -56,7 +65,7 @@ export default function Dashboard() {
           </p>
         </div>
         <button
-          onClick={logout}
+          onClick={handleLogout}
           style={{
             padding: '0.5rem 1rem',
             backgroundColor: '#ef4444',
@@ -82,6 +91,12 @@ export default function Dashboard() {
           <Link
             key={modulo.rota}
             to={modulo.rota}
+            onClick={() =>
+              logAction('CLIQUE_MODULO_DASHBOARD', {
+                modulo: modulo.titulo,
+                destinarA: modulo.rota,
+              })
+            }
             style={{
               display: 'flex',
               flexDirection: 'column',
