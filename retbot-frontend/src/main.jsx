@@ -4,7 +4,7 @@ import { BrowserRouter } from 'react-router-dom'
 import './index.css'
 import App from './App.jsx'
 import { AuthProvider } from './contexts/AuthContext.jsx'
-import { LoggerProvider } from './context/LoggerProvider.jsx'
+import { LoggerProvider } from "./contexts/LoggerProvider.jsx";
 import './styles/variables.css';
 import './styles/reset.css';
 import './styles/layout.css';
