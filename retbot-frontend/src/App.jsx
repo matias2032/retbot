@@ -1,6 +1,7 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import ProtectedRoute from './routes/ProtectedRoute';
 import Login from './pages/Login';
+// import SignUp from './pages/SignUp';
 import PrimeiroAcesso from './pages/PrimeiroAcesso';
 import Dashboard from './pages/Dashboard';
 import Utilizadores from './pages/Utilizadores';
@@ -19,7 +20,7 @@ function App() {
   return (
     <Routes>
       <Route path="/login" element={<Login />} />
-
+      {/* <Route path="/signup" element={<SignUp />} /> */}
 
       <Route
         path="/primeiro-acesso"
